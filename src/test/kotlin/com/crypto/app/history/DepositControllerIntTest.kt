@@ -2,12 +2,14 @@ package com.crypto.app.history
 
 import com.crypto.app.history.dto.DepositRequest
 import com.crypto.app.history.dto.HistoryResponse
+import com.crypto.app.testcontainer.EmbeddedPostgresConfig
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
@@ -18,6 +20,7 @@ import java.time.LocalDateTime
 @AutoConfigureWebTestClient
 @RunWith(SpringRunner::class)
 @AutoConfigureJsonTesters
+@ContextConfiguration(initializers = [EmbeddedPostgresConfig::class])
 class DepositControllerIntTest {
 
     @Autowired
