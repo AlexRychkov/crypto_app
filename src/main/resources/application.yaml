@@ -1,0 +1,13 @@
+spring:
+  r2dbc:
+    username: postgres
+    password: postgres
+    url: r2dbc:postgresql://localhost:5432/postgres
+    pool.enabled: true
+    pool.initial-size: 10
+    pool.max-idle-time: 1m
+    pool.max-size: 30
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
