@@ -12,9 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.test.web.reactive.server.expectBody
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -22,13 +20,12 @@ import java.time.LocalDateTime
 @AutoConfigureJsonTesters
 @ContextConfiguration(initializers = [EmbeddedPostgresConfig::class])
 class DepositControllerIntTest {
-
     @Autowired
     private lateinit var webClient: WebTestClient
 
     @Test
     fun `one deposit`() {
-        val depositRequest = DepositRequest(LocalDateTime.of(2017, 1, 1, 1, 0), BigDecimal.TEN)
+        val depositRequest = DepositRequest("2017-01-01T01:00:00+03:00", BigDecimal.TEN)
 
         Helper.createDeposit(webClient, depositRequest)
                 .expectStatus().isNoContent
@@ -36,37 +33,35 @@ class DepositControllerIntTest {
 
     @Test
     fun `history - deposits in right range`() {
-        val datetime1 = LocalDateTime.of(2018, 2, 2, 2, 0)
-        val amount1 = BigDecimal.ONE
+        val datetime1 = "2018-02-02T02:00:00+01:00"
+        val amount1 = BigDecimal("1.0")
         val depositRequest1 = DepositRequest(datetime1, amount1)
-        val datetime2 = LocalDateTime.of(2019, 1, 1, 1, 0)
+        val datetime2 = "2019-01-01T03:00:00+02:00"
         val amount2 = BigDecimal("1.01")
         val depositRequest2 = DepositRequest(datetime2, amount2)
 
         Helper.createDeposit(webClient, depositRequest1)
         Helper.createDeposit(webClient, depositRequest2)
 
-        Helper.getDeposits(webClient, LocalDateTime.of(2018, 1, 1, 0, 0), LocalDateTime.of(2018, 12, 12, 0, 0))
+        Helper.getDeposits(webClient, "2018-01-01T00:00:00+00:00", "2018-12-12T00:00:00+00:00")
                 .expectStatus().isOk
-                .expectBody<HistoryResponse>()
-                .isEqualTo(HistoryResponse(datetime1, amount1))
+                .expectBodyList(HistoryResponse::class.java)
+                .contains(HistoryResponse("2018-02-02T01:00:00+00:00", amount1))
 
-        Helper.getDeposits(webClient, LocalDateTime.of(2019, 1, 1, 0, 0), LocalDateTime.of(2019, 12, 12, 0, 0))
+        Helper.getDeposits(webClient, "2019-01-01T00:00:00+00:00", "2019-12-12T00:00:00+00:00")
                 .expectStatus().isOk
-                .expectBody<HistoryResponse>()
-                .isEqualTo(HistoryResponse(datetime2, amount2))
+                .expectBodyList(HistoryResponse::class.java)
+                .contains(HistoryResponse("2019-01-01T01:00:00+00:00", amount2))
     }
 
     @Test
     fun `history - right balance for every hour`() {
-        val firstHour = 0
-        val secondHour = 1
-        val datetime1 = LocalDateTime.of(2020, 1, 1, firstHour, 10)
-        val datetime2 = LocalDateTime.of(2020, 1, 1, firstHour, 20)
-        val datetime3 = LocalDateTime.of(2020, 1, 1, firstHour, 25)
-        val datetime4 = LocalDateTime.of(2020, 1, 1, secondHour, 0)
-        val datetime5 = LocalDateTime.of(2020, 1, 1, secondHour, 10)
-        val amount = BigDecimal.ONE
+        val datetime1 = "2020-01-01T00:10:00+00:00"
+        val datetime2 = "2020-01-01T00:20:00+00:00"
+        val datetime3 = "2020-01-01T00:25:00+00:00"
+        val datetime4 = "2020-01-01T01:00:00+00:00"
+        val datetime5 = "2020-01-01T01:10:00+00:00"
+        val amount = BigDecimal("1.0")
 
         val depositsRequests = listOf(
                 DepositRequest(datetime1, amount),
@@ -77,11 +72,11 @@ class DepositControllerIntTest {
         )
         Helper.createDeposits(webClient, depositsRequests)
 
-        Helper.getDeposits(webClient, LocalDateTime.of(2020, 1, 1, firstHour, 0), LocalDateTime.of(2020, 1, 1, secondHour + 10, 0))
+        Helper.getDeposits(webClient, "2020-01-01T00:00:00+00:00", "2020-01-01T05:10:00+00:00")
                 .expectBodyList(HistoryResponse::class.java)
                 .contains(
-                        HistoryResponse(LocalDateTime.of(2020, 1, 1, firstHour, 0), BigDecimal.valueOf(3L)),
-                        HistoryResponse(LocalDateTime.of(2020, 1, 1, secondHour, 0), BigDecimal.valueOf(2L))
+                        HistoryResponse("2020-01-01T00:00:00+00:00", BigDecimal("3.0")),
+                        HistoryResponse("2020-01-01T01:00:00+00:00", BigDecimal("2.0"))
                 )
     }
 }
