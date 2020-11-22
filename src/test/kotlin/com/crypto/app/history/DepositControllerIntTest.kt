@@ -33,12 +33,9 @@ class DepositControllerIntTest {
 
     @Test
     fun `history - deposits in right range`() {
-        val datetime1 = "2018-02-02T02:00:00+01:00"
-        val amount1 = BigDecimal("1.0")
-        val depositRequest1 = DepositRequest(datetime1, amount1)
-        val datetime2 = "2019-01-01T03:00:00+02:00"
+        val depositRequest1 = DepositRequest("2018-02-02T02:00:00+01:00", BigDecimal("1.0"))
         val amount2 = BigDecimal("1.01")
-        val depositRequest2 = DepositRequest(datetime2, amount2)
+        val depositRequest2 = DepositRequest("2019-01-01T03:00:00+02:00", BigDecimal("1.01"))
 
         Helper.createDeposit(webClient, depositRequest1)
         Helper.createDeposit(webClient, depositRequest2)
@@ -46,12 +43,12 @@ class DepositControllerIntTest {
         Helper.getDeposits(webClient, "2018-01-01T00:00:00+00:00", "2018-12-12T00:00:00+00:00")
                 .expectStatus().isOk
                 .expectBodyList(HistoryResponse::class.java)
-                .contains(HistoryResponse("2018-02-02T01:00:00+00:00", amount1))
+                .contains(HistoryResponse("2018-02-02T01:00:00+00:00", "1"))
 
         Helper.getDeposits(webClient, "2019-01-01T00:00:00+00:00", "2019-12-12T00:00:00+00:00")
                 .expectStatus().isOk
                 .expectBodyList(HistoryResponse::class.java)
-                .contains(HistoryResponse("2019-01-01T01:00:00+00:00", amount2))
+                .contains(HistoryResponse("2019-01-01T01:00:00+00:00", amount2.toString()))
     }
 
     @Test
@@ -75,8 +72,8 @@ class DepositControllerIntTest {
         Helper.getDeposits(webClient, "2020-01-01T00:00:00+00:00", "2020-01-01T05:10:00+00:00")
                 .expectBodyList(HistoryResponse::class.java)
                 .contains(
-                        HistoryResponse("2020-01-01T00:00:00+00:00", BigDecimal("3.0")),
-                        HistoryResponse("2020-01-01T01:00:00+00:00", BigDecimal("2.0"))
+                        HistoryResponse("2020-01-01T00:00:00+00:00", "3"),
+                        HistoryResponse("2020-01-01T01:00:00+00:00", "2")
                 )
     }
 }
