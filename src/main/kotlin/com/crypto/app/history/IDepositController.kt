@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/api/deposit")
 interface IDepositController {
     @GetMapping
-    fun history(@RequestParam historyRequest: HistoryRequest): Flux<HistoryResponse>
+    fun history(@RequestBody historyRequest: HistoryRequest): Flux<HistoryResponse>
 
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
