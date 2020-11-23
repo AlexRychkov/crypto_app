@@ -1,9 +1,12 @@
 version: "3.8"
 services:
   app:
+    container_name: crypto_app
     build: .
     ports:
       - 8080:8080
+    environment:
+      - JAVA_OPTS=-Dspring.r2dbc.url=r2dbc:postgresql://db:5432/postgres
   db:
     image: postgres:10.1
     container_name: crypto_app_db

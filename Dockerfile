@@ -3,5 +3,5 @@ WORKDIR /
 ADD build/libs/app-0.0.1.jar .
 
 CMD java \
-    -Dspring.r2dbc.url=r2dbc:postgresql://db:5432/postgres \
+    $JAVA_OPTS \
     -jar app-0.0.1.jar
